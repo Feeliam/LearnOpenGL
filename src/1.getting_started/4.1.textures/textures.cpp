@@ -1,33 +1,38 @@
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
-#include <stb_image.h>
+#include <glad/glad.h>    // OpenGL函数加载器
+#include <GLFW/glfw3.h>   // OpenGL窗口和上下文管理
+#include <stb_image.h>    // 图片加载库
 
-#include <learnopengl/filesystem.h>
-#include <learnopengl/shader_s.h>
+#include <learnopengl/filesystem.h>  // 文件系统工具
+#include <learnopengl/shader_s.h>    // 着色器类
 
 #include <iostream>
 
+// 函数声明
+// 窗口大小改变时的回调函数
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+// 处理输入的函数
 void processInput(GLFWwindow *window);
 
-// settings
-const unsigned int SCR_WIDTH = 800;
-const unsigned int SCR_HEIGHT = 600;
+// 窗口设置
+const unsigned int SCR_WIDTH = 800;   // 窗口宽度
+const unsigned int SCR_HEIGHT = 600;  // 窗口高度
 
 int main()
 {
-    // glfw: initialize and configure
+    // GLFW初始化和配置
     // ------------------------------
     glfwInit();
+    // 设置OpenGL版本为3.3
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    // 设置OpenGL核心模式
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 #ifdef __APPLE__
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
 
-    // glfw window creation
+    // 创建GLFW窗口
     // --------------------
     GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
     if (window == NULL)
@@ -39,7 +44,7 @@ int main()
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
-    // glad: load all OpenGL function pointers
+    // 加载所有OpenGL函数指针
     // ---------------------------------------
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
@@ -47,61 +52,66 @@ int main()
         return -1;
     }
 
-    // build and compile our shader zprogram
+    // 构建和编译着色器程序
     // ------------------------------------
-    Shader ourShader("4.1.texture.vs", "4.1.texture.fs"); 
+    Shader ourShader("bin/1.getting_started/4.1.texture.vs", "bin/1.getting_started/4.1.texture.fs"); 
 
-    // set up vertex data (and buffer(s)) and configure vertex attributes
+    // 设置顶点数据（和缓冲区）并配置顶点属性
     // ------------------------------------------------------------------
     float vertices[] = {
-        // positions          // colors           // texture coords
-         0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f, // top right
-         0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f, // bottom right
-        -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f, // bottom left
-        -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f  // top left 
+        // 位置              // 颜色             // 纹理坐标
+         0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f, // 右上
+         0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f, // 右下
+        -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f, // 左下
+        -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f  // 左上 
     };
     unsigned int indices[] = {  
-        0, 1, 3, // first triangle
-        1, 2, 3  // second triangle
+        0, 1, 3, // 第一个三角形
+        1, 2, 3  // 第二个三角形
     };
-    unsigned int VBO, VAO, EBO;
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
-    glGenBuffers(1, &EBO);
 
+    // 创建和配置VAO、VBO和EBO
+    unsigned int VBO, VAO, EBO;
+    glGenVertexArrays(1, &VAO);    // 生成顶点数组对象
+    glGenBuffers(1, &VBO);         // 生成顶点缓冲对象
+    glGenBuffers(1, &EBO);         // 生成索引缓冲对象
+
+    // 绑定VAO
     glBindVertexArray(VAO);
 
+    // 绑定并填充VBO
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
+    // 绑定并填充EBO
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-    // position attribute
+    // 设置顶点属性
+    // 位置属性
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
-    // color attribute
+    // 颜色属性
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
-    // texture coord attribute
+    // 纹理坐标属性
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
     glEnableVertexAttribArray(2);
 
-
-    // load and create a texture 
+    // 加载和创建纹理 
     // -------------------------
     unsigned int texture;
     glGenTextures(1, &texture);
-    glBindTexture(GL_TEXTURE_2D, texture); // all upcoming GL_TEXTURE_2D operations now have effect on this texture object
-    // set the texture wrapping parameters
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	// set texture wrapping to GL_REPEAT (default wrapping method)
+    glBindTexture(GL_TEXTURE_2D, texture); // 所有GL_TEXTURE_2D操作将影响此纹理对象
+    // 设置纹理环绕方式
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	// 设置纹理环绕方式为GL_REPEAT（默认方式）
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    // set texture filtering parameters
+    // 设置纹理过滤方式
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    // load image, create texture and generate mipmaps
+    // 加载图片，创建纹理并生成mipmap
     int width, height, nrChannels;
-    // The FileSystem::getPath(...) is part of the GitHub repository so we can find files on any IDE/platform; replace it with your own image path.
+    // FileSystem::getPath(...)是GitHub仓库的一部分，可以在任何IDE/平台上找到文件；替换为你自己的图片路径。
     unsigned char *data = stbi_load(FileSystem::getPath("resources/textures/container.jpg").c_str(), &width, &height, &nrChannels, 0);
     if (data)
     {
@@ -114,59 +124,63 @@ int main()
     }
     stbi_image_free(data);
 
-
-    // render loop
-    // -----------
+    // 渲染循环
     while (!glfwWindowShouldClose(window))
     {
-        // input
-        // -----
+        // 处理输入
         processInput(window);
 
-        // render
-        // ------
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
+        // 渲染指令
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);  // 设置清屏颜色
+        glClear(GL_COLOR_BUFFER_BIT);           // 清除颜色缓冲
 
-        // bind Texture
+        // 绑定纹理
+        // glActiveTexture(GL_TEXTURE0); // 在绑定纹理之前先激活纹理单元
         glBindTexture(GL_TEXTURE_2D, texture);
 
-        // render container
+        // 激活着色器程序
         ourShader.use();
+        // 绑定VAO并绘制
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
-        // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
-        // -------------------------------------------------------------------------------
+        // 交换缓冲并查询IO事件
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
 
-    // optional: de-allocate all resources once they've outlived their purpose:
+    // 可选：在所有资源释放后进行清理
     // ------------------------------------------------------------------------
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
     glDeleteBuffers(1, &EBO);
 
-    // glfw: terminate, clearing all previously allocated GLFW resources.
+    // 终止GLFW，清理所有之前分配的GLFW资源
     // ------------------------------------------------------------------
     glfwTerminate();
     return 0;
 }
 
-// process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
-// ---------------------------------------------------------------------------------------------------------
+/**
+ * 处理所有输入：查询当前帧是否有按键被按下/释放，并作出相应反应
+ * @param window GLFW窗口指针
+ */
 void processInput(GLFWwindow *window)
 {
+    // 按ESC键关闭窗口
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 }
 
-// glfw: whenever the window size changed (by OS or user resize) this callback function executes
-// ---------------------------------------------------------------------------------------------
+/**
+ * GLFW回调函数：当窗口大小改变时(由OS或用户调整)该回调函数就会执行
+ * @param window GLFW窗口指针
+ * @param width  新的窗口宽度
+ * @param height 新的窗口高度
+ */
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
-    // make sure the viewport matches the new window dimensions; note that width and 
-    // height will be significantly larger than specified on retina displays.
+    // 确保视口与新的窗口尺寸匹配
+    // 注意：在视网膜显示器上，宽度和高度会明显大于指定的尺寸
     glViewport(0, 0, width, height);
 }
