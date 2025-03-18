@@ -2,18 +2,21 @@
 #define SHADER_H
 
 #include <glad/glad.h>
-
 #include <string>
 #include <fstream>
 #include <sstream>
 #include <iostream>
 
+// Shader类：用于加载、编译和管理OpenGL着色器程序
 class Shader
 {
 public:
+    // 着色器程序ID
     unsigned int ID;
-    // constructor generates the shader on the fly
-    // ------------------------------------------------------------------------
+
+    // 构造函数：接收顶点着色器和片段着色器的文件路径，完成着色器的创建和编译
+    // vertexPath: 顶点着色器文件路径
+    // fragmentPath: 片段着色器文件路径
     Shader(const char* vertexPath, const char* fragmentPath)
     {
         // 1. retrieve the vertex/fragment source code from filePath
@@ -59,6 +62,7 @@ public:
         glCompileShader(fragment);
         checkCompileErrors(fragment, "FRAGMENT");
         // shader Program
+        // 创建shader程序
         ID = glCreateProgram();
         glAttachShader(ID, vertex);
         glAttachShader(ID, fragment);
@@ -68,32 +72,44 @@ public:
         glDeleteShader(vertex);
         glDeleteShader(fragment);
     }
-    // activate the shader
-    // ------------------------------------------------------------------------
+
+    // use函数：激活着色器程序
+    // 在渲染时需要调用此函数使用该着色器
     void use() 
     { 
         glUseProgram(ID); 
     }
-    // utility uniform functions
-    // ------------------------------------------------------------------------
+
+    // uniform工具函数：用于设置着色器中uniform变量的值
+    
+    // setBool：设置布尔类型的uniform变量
+    // name: uniform变量名
+    // value: 要设置的布尔值
     void setBool(const std::string &name, bool value) const
     {         
         glUniform1i(glGetUniformLocation(ID, name.c_str()), (int)value); 
     }
-    // ------------------------------------------------------------------------
+
+    // setInt：设置整型uniform变量
+    // name: uniform变量名
+    // value: 要设置的整数值
     void setInt(const std::string &name, int value) const
     { 
         glUniform1i(glGetUniformLocation(ID, name.c_str()), value); 
     }
-    // ------------------------------------------------------------------------
+
+    // setFloat：设置浮点型uniform变量
+    // name: uniform变量名
+    // value: 要设置的浮点数值
     void setFloat(const std::string &name, float value) const
     { 
         glUniform1f(glGetUniformLocation(ID, name.c_str()), value); 
     }
 
 private:
-    // utility function for checking shader compilation/linking errors.
-    // ------------------------------------------------------------------------
+    // checkCompileErrors：检查着色器编译和链接错误的工具函数
+    // shader: 着色器或程序的ID
+    // type: 错误类型标识（"VERTEX", "FRAGMENT" 或 "PROGRAM"）
     void checkCompileErrors(unsigned int shader, std::string type)
     {
         int success;
